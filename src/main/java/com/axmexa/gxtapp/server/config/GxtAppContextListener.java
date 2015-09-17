@@ -1,4 +1,4 @@
-package com.axmexa.gxtapp.server;
+package com.axmexa.gxtapp.server.config;
 
 import javax.servlet.ServletContext;
 import javax.servlet.ServletContextEvent;
@@ -8,10 +8,8 @@ import javax.servlet.annotation.WebListener;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.AnnotationConfigApplicationContext;
 
-import com.axmexa.gxtapp.shared.AppConfig;
-
 @WebListener
-public class SpringApplicationContextListener implements ServletContextListener {
+public class GxtAppContextListener implements ServletContextListener {
 
 
 	public static final String SPRING_CONTEXT = "springContext";

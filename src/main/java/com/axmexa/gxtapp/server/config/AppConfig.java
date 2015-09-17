@@ -1,4 +1,4 @@
-package com.axmexa.gxtapp.shared;
+package com.axmexa.gxtapp.server.config;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;

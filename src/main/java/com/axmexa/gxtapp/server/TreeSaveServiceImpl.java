@@ -11,6 +11,7 @@ import org.springframework.data.mongodb.core.MongoTemplate;
 
 import com.axmexa.gxtapp.client.model.Item;
 import com.axmexa.gxtapp.client.service.TreeSaveService;
+import com.axmexa.gxtapp.server.config.GxtAppContextListener;
 import com.google.gwt.user.server.rpc.RemoteServiceServlet;
 
 public class TreeSaveServiceImpl extends RemoteServiceServlet implements TreeSaveService {
@@ -23,7 +24,7 @@ public class TreeSaveServiceImpl extends RemoteServiceServlet implements TreeSav
 	public void init(ServletConfig config) throws ServletException {
 		logger.warning("Strart init");
 		super.init(config);
-		final ApplicationContext springContext = (ApplicationContext) getServletContext().getAttribute(SpringApplicationContextListener.SPRING_CONTEXT);
+		final ApplicationContext springContext = (ApplicationContext) getServletContext().getAttribute(GxtAppContextListener.SPRING_CONTEXT);
 		
 		template = springContext.getBean(MongoTemplate.class);
 		logger.warning("template: " + template);

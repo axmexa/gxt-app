@@ -12,7 +12,7 @@
 	</welcome-file-list>
 
 	<listener>
-		<listener-class>com.axmexa.gxtapp.server.SpringApplicationContextListener</listener-class>
+		<listener-class>com.axmexa.gxtapp.server.config.GxtAppContextListener</listener-class>
 	</listener>
 
 	<servlet>
