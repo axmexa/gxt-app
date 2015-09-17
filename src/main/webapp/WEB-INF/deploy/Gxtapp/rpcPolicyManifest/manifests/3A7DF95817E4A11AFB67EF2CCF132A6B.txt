@@ -1,0 +1,2 @@
+serviceClass: com.axmexa.gxtapp.client.service.TreeUploadService
+path: 71486CB50E50A4B506EEB8338A6E4E79.gwt.rpc

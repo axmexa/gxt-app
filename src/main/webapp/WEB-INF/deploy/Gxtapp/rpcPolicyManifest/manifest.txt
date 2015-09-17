@@ -1,0 +1,4 @@
+# Module Gxtapp
+# RPC service class, partial path of RPC policy file
+com.axmexa.gxtapp.client.service.TreeUploadService, 71486CB50E50A4B506EEB8338A6E4E79.gwt.rpc
+com.axmexa.gxtapp.client.service.GetLinesService, 81BAC69EC96EA79C3E454DAA162E00C3.gwt.rpc

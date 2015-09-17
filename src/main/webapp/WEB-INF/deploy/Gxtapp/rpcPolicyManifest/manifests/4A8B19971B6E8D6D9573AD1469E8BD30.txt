@@ -1,0 +1,2 @@
+serviceClass: com.axmexa.gxtapp.client.service.GetLinesService
+path: 81BAC69EC96EA79C3E454DAA162E00C3.gwt.rpc

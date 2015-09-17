@@ -1,0 +1,53 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<web-app xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xmlns="http://java.sun.com/xml/ns/javaee" xmlns:web="http://java.sun.com/xml/ns/javaee/web-app_2_5.xsd"
+	xsi:schemaLocation="http://java.sun.com/xml/ns/javaee http://java.sun.com/xml/ns/javaee/web-app_2_5.xsd"
+	version="2.5">
+
+	<!-- Servlets -->
+
+	<!-- Default page to serve -->
+	<welcome-file-list>
+		<welcome-file>Gxtapp.html</welcome-file>
+	</welcome-file-list>
+
+	<listener>
+		<listener-class>com.axmexa.gxtapp.server.SpringApplicationContextListener</listener-class>
+	</listener>
+
+	<servlet>
+		<servlet-name>FileUploadService</servlet-name>
+		<servlet-class>com.axmexa.gxtapp.server.FileUploadServiceImpl</servlet-class>
+	</servlet>
+	<servlet>
+		<servlet-name>GetLinesService</servlet-name>
+		<servlet-class>com.axmexa.gxtapp.server.GetLinesServiceImpl</servlet-class>
+	</servlet>
+	<servlet>
+		<servlet-name>loadtree</servlet-name>
+		<servlet-class>com.axmexa.gxtapp.server.TreeLoadServiceImpl</servlet-class>
+	</servlet>
+	<servlet>
+		<servlet-name>savetree</servlet-name>
+		<servlet-class>com.axmexa.gxtapp.server.TreeSaveServiceImpl</servlet-class>
+	</servlet>
+
+	<servlet-mapping>
+		<servlet-name>FileUploadService</servlet-name>
+		<url-pattern>uploadfile</url-pattern>
+	</servlet-mapping>
+	<servlet-mapping>
+		<servlet-name>GetLinesService</servlet-name>
+		<url-pattern>/Gxtapp/getlines</url-pattern>
+	</servlet-mapping>
+	<servlet-mapping>
+		<servlet-name>loadtree</servlet-name>
+		<url-pattern>/Gxtapp/loadtree</url-pattern>
+	</servlet-mapping>
+	<servlet-mapping>
+		<servlet-name>savetree</servlet-name>
+		<url-pattern>/Gxtapp/savetree</url-pattern>
+	</servlet-mapping>
+
+
+</web-app>
