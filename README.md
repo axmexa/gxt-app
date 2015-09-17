@@ -16,4 +16,8 @@ The right tree can be saved in a database format MongoDB preserving the folder s
 ## Config ##
 - DB connection config is in [GxtAppConfig.java](https://github.com/axmexa/gxt-app/blob/master/src/main/java/com/axmexa/gxtapp/server/config/GxtAppConfig.java)
 - I use one property for fast compile. In  [Gxtapp.gwt.xml](https://github.com/axmexa/gxt-app/blob/master/src/main/java/com/axmexa/gxtapp/Gxtapp.gwt.xml) you can comment this line if required
-    set-property name="user.agent" value="safari"
+```
+< set-property name="user.agent" value="safari"/>
+```
+
+
