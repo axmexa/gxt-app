@@ -12,14 +12,14 @@ import org.springframework.context.annotation.AnnotationConfigApplicationContext
 public class GxtAppContextListener implements ServletContextListener {
 
 
-	public static final String SPRING_CONTEXT = "springContext";
+	public static final String GxtAppConfig = "GxtAppConfig";
 
 	@Override
 	public void contextInitialized(ServletContextEvent e) {
 		
-		final ApplicationContext context = new AnnotationConfigApplicationContext(AppConfig.class);
+		final ApplicationContext context = new AnnotationConfigApplicationContext(GxtAppConfig.class);
 		ServletContext servletContext = e.getServletContext();
-		servletContext.setAttribute(SPRING_CONTEXT, context);
+		servletContext.setAttribute(GxtAppConfig, context);
 		
 
 	}

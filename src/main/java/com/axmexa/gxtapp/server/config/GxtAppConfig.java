@@ -7,7 +7,7 @@ import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.data.mongodb.core.SimpleMongoDbFactory;
 
 @Configuration
-public class AppConfig {
+public class GxtAppConfig {
 
 	@Bean
 	public MongoFactoryBean mongo() {

@@ -28,7 +28,7 @@
 	<!-- Specify the paths for translatable code -->
 	<source path='client' />
 	<source path='shared' />
-	<source path='config' />
+	<source path='server' />
 
 	<!-- http://docs.sencha.com/gxt/3.1/getting_started/sdm/SuperDevMode.html -->
 	<!-- Use this when GWT < 2.7 -->

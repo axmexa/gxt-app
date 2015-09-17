@@ -24,6 +24,7 @@ import com.google.gwt.event.dom.client.ChangeEvent;
 import com.google.gwt.event.dom.client.ChangeHandler;
 import com.google.gwt.event.dom.client.DoubleClickEvent;
 import com.google.gwt.event.dom.client.DoubleClickHandler;
+import com.google.gwt.resources.client.ImageResource;
 import com.google.gwt.user.client.rpc.AsyncCallback;
 import com.google.gwt.user.client.ui.IsWidget;
 import com.google.gwt.user.client.ui.Label;
@@ -34,6 +35,7 @@ import com.sencha.gxt.core.client.util.Padding;
 import com.sencha.gxt.data.shared.TreeStore;
 import com.sencha.gxt.data.shared.TreeStore.TreeNode;
 import com.sencha.gxt.dnd.core.client.DND.Feedback;
+import com.sencha.gxt.dnd.core.client.DndDropEvent;
 import com.sencha.gxt.dnd.core.client.TreeDragSource;
 import com.sencha.gxt.dnd.core.client.TreeDropTarget;
 import com.sencha.gxt.widget.core.client.ContentPanel;
@@ -95,7 +97,7 @@ public class GxtappEntryPoint implements EntryPoint, IsWidget {
 	static{
 		loadFileBtn.addSelectHandler(new SelectHandler() {
 			
-			final AutoProgressMessageBox progressMessageBox = new AutoProgressMessageBox("Progress", "Loading your data, please wait...");
+			final AutoProgressMessageBox progressLoadFileMessageBox = new AutoProgressMessageBox("Progress", "Loading your data, please wait...");
 			GetLinesServiceAsync getLinesService = GWT.create(GetLinesService.class);
 			
 			@Override
@@ -114,9 +116,9 @@ public class GxtappEntryPoint implements EntryPoint, IsWidget {
 							alert.show();
 						}else{
 							fp.submit();
-						    progressMessageBox.setProgressText("Loading...");
-						    progressMessageBox.auto();
-						    progressMessageBox.show();
+						    progressLoadFileMessageBox.setProgressText("Loading file...");
+						    progressLoadFileMessageBox.auto();
+						    progressLoadFileMessageBox.show();
 						}
 					}
 				});
@@ -128,45 +130,44 @@ public class GxtappEntryPoint implements EntryPoint, IsWidget {
 
 			    fp.setMethod(Method.POST);
 			    fp.setEncoding(Encoding.MULTIPART);
-//			    fp.setAction("fileupload");
 			    fp.setAction("uploadfile");
 			    fp.setWidget(vlc);
 			    fp.addSubmitCompleteHandler(new SubmitCompleteHandler() {
 			      public void onSubmitComplete(SubmitCompleteEvent event) {
 			        String resultHtml = event.getResults();
 			        if (resultHtml.indexOf(FILE_IS_LARGE) >= 0){
-			        	progressMessageBox.hide();
+			        	progressLoadFileMessageBox.hide();
 			        	AlertMessageBox alert = new AlertMessageBox("Wrong file", FILE_IS_LARGE);
 			        	alert.show();
 			        }else if (resultHtml.indexOf(FILE_IS_WRONG_CHARSET) >= 0){
-			        	progressMessageBox.hide();
+			        	progressLoadFileMessageBox.hide();
 			        	AlertMessageBox alert = new AlertMessageBox("Wrong file", FILE_IS_WRONG_CHARSET);
 						alert.show();
 			        }else if (resultHtml.indexOf("HTTP ERROR 500") >= 0){
-			        	progressMessageBox.hide();
+			        	progressLoadFileMessageBox.hide();
 			        	AlertMessageBox alert = new AlertMessageBox("Wrong file", "Some error in file");
 						alert.show();
 			        }else{
-			        	printW(resultHtml);
+			        	log(resultHtml);
 			        	String[] params = resultHtml.split("=");
-			        	printW(params[0] + "  - " + params[1]);
-			        	progressMessageBox.setMessage("Processing file...");
+			        	log(params[0] + "  - " + params[1]);
+			        	progressLoadFileMessageBox.setMessage("Processing file...");
 			        	getLinesService.getLines(params[0], params[1], new AsyncCallback<List<String>>() {
 							
 							@Override
 							public void onSuccess(List<String> result) {
-								printW(result);
-								progressMessageBox.hide();
+								log(result);
+								progressLoadFileMessageBox.hide();
 								loadWindow.hide();
 								updateTreeStores(result);
 							}
 							
 							@Override
 							public void onFailure(Throwable caught) {
-								printW(caught.getMessage());
-								AlertMessageBox alert = new AlertMessageBox("Cant process the file", "Cant process the file");
+								log(caught);
+								AlertMessageBox alert = new AlertMessageBox("Cant process the file", "Can`t process the file");
 								alert.show();
-								progressMessageBox.hide();
+								progressLoadFileMessageBox.hide();
 								loadWindow.hide();
 							}
 						});
@@ -183,25 +184,33 @@ public class GxtappEntryPoint implements EntryPoint, IsWidget {
 		
 		
 		final TreeLoadServiceAsync treeLoadDBService = GWT.create(TreeLoadService.class);
+		final AutoProgressMessageBox progressLoadDBMessageBox = new AutoProgressMessageBox("Progress", "Loading data, please wait...");
 		
 		loadDbBtn.addSelectHandler(new SelectHandler() {
 			
 			@Override
 			public void onSelect(SelectEvent event) {
+				
+				progressLoadDBMessageBox.setProgressText("Saving in Database...");
+				progressLoadDBMessageBox.auto();
+				progressLoadDBMessageBox.show();
+				
 				treeLoadDBService.getItems(new AsyncCallback<Item[]>() {
 
 					@Override
 					public void onFailure(Throwable caught) {
-						printW("FAIL!");
-						printW(caught);
+						log("FAIL!");
+						log(caught);
+						progressLoadDBMessageBox.hide();
 					}
 
 					@Override
 					public void onSuccess(Item[] result) {
-						printW("succes!");
+						log("succes!");
 						removeAll(leftStore);
 						removeAll(rightStore);
 						rightStore.addSubTree(0, createModels(Arrays.asList(result)));
+						progressLoadDBMessageBox.hide();
 					}
 				});
 				
@@ -209,23 +218,34 @@ public class GxtappEntryPoint implements EntryPoint, IsWidget {
 		});
 		
 		final TreeSaveServiceAsync treeSaveService = GWT.create(TreeSaveService.class);
+		final AutoProgressMessageBox progressSaveDBMessageBox = new AutoProgressMessageBox("Progress", "Saving data, please wait...");
 		
 		saveDbBtn.addSelectHandler(new SelectHandler() {
 			
 			@Override
 			public void onSelect(SelectEvent event) {
-				treeSaveService.saveTree(rightStore.getAll().toArray(new Item[0]), new AsyncCallback<String>() {
+				
+				progressSaveDBMessageBox.setProgressText("Saving in Database...");
+				progressSaveDBMessageBox.auto();
+				progressSaveDBMessageBox.show();
+				
+				treeSaveService.saveTree(rightStore.getRootItems().toArray(new Item[0]), new AsyncCallback<String>() {
 
 					@Override
 					public void onFailure(Throwable caught) {
-						printW("FAIL store!");
-						printW(caught);						
+						log("FAIL store!");
+						log(caught);						
+						progressSaveDBMessageBox.hide();
 					}
 
 					@Override
 					public void onSuccess(String result) {
-						printW("STORED");
-						printW(result);
+						log("STORED");
+						log(result);
+						progressSaveDBMessageBox.hide();
+						AlertMessageBox messBox = new AlertMessageBox("Result", "Your data succesfully stored in Database");
+						messBox.setIcon(Icons.INSTANCE.getToDBImage());
+						messBox.show();
 					}
 				});
 			}
@@ -393,7 +413,7 @@ public class GxtappEntryPoint implements EntryPoint, IsWidget {
 				add(extractItems(children));
 			}
 		};
-//		leftStore.addSubTree(0, createModels());
+		leftStore.addSubTree(0, createModels(createSimpleTree()));
 		
 		
 		leftTree = new Tree<Item, String>(leftStore, properties.name()){
@@ -444,16 +464,10 @@ public class GxtappEntryPoint implements EntryPoint, IsWidget {
 			}
 		} else {
 			Item itemRight = selectedItemsRight.get(0);
-			printW("selectedItemsRight.get(0): " + itemRight);
 			if (itemRight.isDir()) {
 				for (Item item : selectedItemsLeft) {
-					printW("Start Iter");
-					printW(item);
-					
 					rightStore.add(itemRight, new Item(item));
 					leftStore.remove(item);
-//					rightStore.add(itemRight, item);
-					printW("End   Iter");
 				}
 			}
 		}
@@ -480,7 +494,6 @@ public class GxtappEntryPoint implements EntryPoint, IsWidget {
 		};
 		
 //		rightStore.addSubTree(0, createModels(createSimpleTree()));
-//		rightStore.addSubTree(0, createModels(Arrays.asList(new Item("blavla"))));
 		
 		rightTree = new Tree<Item, String>(rightStore, properties.name()){
 			@Override
@@ -492,7 +505,21 @@ public class GxtappEntryPoint implements EntryPoint, IsWidget {
 		rightTree.setSelectionModel(new TreeSelectionModel<Item>());
 		rightTree.getStyle().setLeafIcon(Icons.INSTANCE.getLeafImage());
 		
-		new TreeDragSource<Item>(rightTree);
+		new TreeDragSource<Item>(rightTree){
+			@Override
+			protected void onDragDrop(DndDropEvent event) {
+				ArrayList<TreeStore.TreeNode<Item>> nodeList = (ArrayList<TreeStore.TreeNode<Item>>)event.getData();
+				for (TreeNode<Item> node : nodeList) {
+					Item it = node.getData();
+					try {
+						rightStore.getParent(it).getItems().remove(it);
+					} catch (Exception e) {
+						log(e);
+					}
+				}
+				super.onDragDrop(event);
+			}
+		};
 		
 		TreeDropTarget<Item> treeDropTarget = new TreeDropTarget<Item>(rightTree);
 		treeDropTarget.setFeedback(Feedback.APPEND);
@@ -540,6 +567,7 @@ public class GxtappEntryPoint implements EntryPoint, IsWidget {
 			public void onSelect(SelectEvent event) {
 				List<Item> selectedItemsRight = rightTree.getSelectionModel().getSelectedItems();
 				for (Item item : selectedItemsRight) {
+					rightStore.getParent(item).getItems().remove(item);
 					List<Item> allChildren = rightStore.getAllChildren(item);
 					moveFromRightToLeft(allChildren);
 					if (item.isDir())
@@ -572,27 +600,6 @@ public class GxtappEntryPoint implements EntryPoint, IsWidget {
 		}
 	}
 	
-	
-		private void collect(Item item, Iterator iterator) {
-		printW("start: " + item);
-		if (item.isDir()){
-			for (Iterator childIterator = item.getItems().iterator(); childIterator.hasNext();) {
-				collect((Item)childIterator.next(), childIterator);
-			} 
-		}
-		printW("iterator.remove();");
-		iterator.remove();
-		
-		printW("rightStore.remove(item);");
-		rightStore.remove(item);
-		
-		if (!(item.isDir())){
-			printW("leftStore.add(new Item(item))");
-			leftStore.add(new Item(item));
-		}
-		
-		printW("end  : " + item);
-	}
 	
 	private List<? extends Item> initData(){
 		
@@ -633,8 +640,7 @@ public class GxtappEntryPoint implements EntryPoint, IsWidget {
 		twod.addItem(two1);
 		twod.addItem(two2);
 
-		// return Arrays.asList(oned, one1, one2, twod, two1, two2);
-		return Arrays.asList(oned, /*twod, */three);
+		return Arrays.asList(oned, three);
 
 	}
 
@@ -676,22 +682,10 @@ public class GxtappEntryPoint implements EntryPoint, IsWidget {
 		RootPanel.get().add(this);
 	}
 
-	public static void main(String[] args) {
-		System.out.println();
-	}
-	
-	static void printW(Object o){
+	static void log(Object o){
 		if (o instanceof Throwable)
 			logger.log(Level.WARNING, ((Throwable)o).getMessage(), ((Throwable)o));
 		logger.warning(String.valueOf(o));
-	}
-	
-	static void print(Object o){
-		DefaultInfoConfig config = new DefaultInfoConfig("LOG", o.toString());
-        config.setPosition(InfoPosition.BOTTOM_LEFT);
-        config.setWidth(800);
-        config.setDisplay(10000);
-        Info.display(config);
 	}
 	
 }

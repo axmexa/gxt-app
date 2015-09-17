@@ -14,7 +14,7 @@
 		<!-- GXT -->
 		<gxt.version>3.1.1</gxt.version>
 
-		<spring.version>3.0.5.RELEASE</spring.version>
+		<spring.version>3.1.2.RELEASE</spring.version>
 
 		<!-- GWT -->
 		<gwt.version>2.6.1</gwt.version>
@@ -85,8 +85,8 @@
 					<copyWebapp>true</copyWebapp>
 					<hostedWebapp>${webappDirectory}</hostedWebapp>
 
-					<runTarget>Converter.html</runTarget>
-					<module>com.axmexa.converter.Converter</module>
+					<runTarget>Gxtapp.html</runTarget>
+					<module>com.axmexa.gxtapp.Gxtapp</module>
 				</configuration>
 				<executions>
 					<execution>
@@ -104,7 +104,7 @@
 				<configuration>
 					<url>http://localhost:8080/manager/text</url>
 					<server>TomcatServer</server>
-					<path>/converter-0.0.1-SNAPSHOT</path>
+					<path>/gxtapp-0.0.1-SNAPSHOT</path>
 				</configuration>
 			</plugin>
 			<plugin>
@@ -114,7 +114,7 @@
 				<configuration>
 					<url>http://localhost:8080/manager</url>
 					<server>TomcatServer</server>
-					<path>/converter-0.0.1-SNAPSHOT</path>
+					<path>/gxtapp-0.0.1-SNAPSHOT</path>
 				</configuration>
 			</plugin>
 		</plugins>
@@ -137,7 +137,36 @@
 			<artifactId>spring-web</artifactId>
 			<version>${spring.version}</version>
 		</dependency>
-
+		<dependency>
+			<groupId>cglib</groupId>
+			<artifactId>cglib</artifactId>
+			<version>2.2.2</version>
+		</dependency>
+		<dependency>
+			<groupId>org.springframework.data</groupId>
+			<artifactId>spring-data-mongodb</artifactId>
+			<version>1.1.0.RELEASE</version>
+		</dependency>
+		<dependency>
+			<groupId>org.mongodb</groupId>
+			<artifactId>mongo-java-driver</artifactId>
+			<version>2.7.2</version>
+		</dependency>
+		<dependency>
+			<groupId>org.springframework</groupId>
+			<artifactId>spring-core</artifactId>
+			<version>${spring.version}</version>
+		</dependency>
+		<dependency>
+			<groupId>org.springframework</groupId>
+			<artifactId>spring-context</artifactId>
+			<version>${spring.version}</version>
+		</dependency>
+		<dependency>
+			<groupId>org.springframework</groupId>
+			<artifactId>spring-context-support</artifactId>
+			<version>${spring.version}</version>
+		</dependency>
 
 		<!-- GXT -->
 		<!-- http://docs.sencha.com/gxt/3.1/getting_started/maven/Maven.html -->

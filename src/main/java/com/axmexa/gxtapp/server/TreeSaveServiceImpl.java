@@ -8,8 +8,10 @@ import javax.servlet.ServletException;
 
 import org.springframework.context.ApplicationContext;
 import org.springframework.data.mongodb.core.MongoTemplate;
+import org.springframework.data.mongodb.core.query.Query;
 
 import com.axmexa.gxtapp.client.model.Item;
+import com.axmexa.gxtapp.client.model.ItemIDs;
 import com.axmexa.gxtapp.client.service.TreeSaveService;
 import com.axmexa.gxtapp.server.config.GxtAppContextListener;
 import com.google.gwt.user.server.rpc.RemoteServiceServlet;
@@ -22,25 +24,40 @@ public class TreeSaveServiceImpl extends RemoteServiceServlet implements TreeSav
 	
 	@Override
 	public void init(ServletConfig config) throws ServletException {
-		logger.warning("Strart init");
+		
 		super.init(config);
-		final ApplicationContext springContext = (ApplicationContext) getServletContext().getAttribute(GxtAppContextListener.SPRING_CONTEXT);
+		final ApplicationContext springContext = (ApplicationContext) getServletContext().getAttribute(GxtAppContextListener.GxtAppConfig);
 		
 		template = springContext.getBean(MongoTemplate.class);
-		logger.warning("template: " + template);
 	}
 	
 	@Override
 	public String saveTree(Item[] rootNodes) {
-		logger.warning("Db Name: " + template.getDb().getName());
-		logger.warning("Items to save:" + Arrays.asList(rootNodes));
-		StringBuilder sb = new StringBuilder("Before insert: ");
-		sb.append(template.findAll(Item.class));
-		template.insertAll(Arrays.asList(rootNodes));
-		sb.append("\nAfter insert: ");
-		sb.append(template.findAll(Item.class));
 		
-		return sb.toString();
+		logger.warning("Try to remove all items & list root Ids");
+		logger.warning("Items to be remove: " + template.findAll(Item.class));
+		
+		template.remove(new Query(), Item.class);
+		template.remove(new Query(), ItemIDs.class);
+		
+		logger.warning("All items & list root Ids removed");
+		
+		
+		logger.warning("Try to save new root nodes: " + Arrays.asList(rootNodes));
+		
+		ItemIDs rootIDs = new ItemIDs(); 
+		for (Item item : rootNodes) {
+			rootIDs.addId(item.getId());
+		}
+		
+		template.insert(rootIDs);
+		template.insertAll(Arrays.asList(rootNodes));
+		
+		String resMessage = "Saved Items: " + template.findAll(Item.class);
+		
+		logger.warning(resMessage);
+		
+		return resMessage;
 	}
-
+	
 }

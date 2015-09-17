@@ -93,6 +93,6 @@ public class Item implements Serializable{
 		if (this.isDir())
 			items.add(it);
 		else 
-			throw new UnsupportedOperationException("You can add childs only to isDir items ");
+			throw new UnsupportedOperationException("You can add childs only to isDir items!");
 	}
 }
