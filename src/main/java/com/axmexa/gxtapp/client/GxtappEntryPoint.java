@@ -89,10 +89,10 @@ public class GxtappEntryPoint implements EntryPoint, IsWidget {
 	private static final TextButton toLeftAllBtn = new TextButton();
 	private SimpleContainer centerPanel;
 	private ItemProperties properties;
-	private static TreeStore<Item> leftStore;
-	private Tree<Item, String> leftTree;
-	private static TreeStore<Item> rightStore;
-	private Tree<Item, String> rightTree;
+	private static TreeStore<Item> listStore;
+	private Tree<Item, String> list;
+	private static TreeStore<Item> treeStore;
+	private Tree<Item, String> tree;
 	
 	static{
 		loadFileBtn.addSelectHandler(new SelectHandler() {
@@ -207,9 +207,9 @@ public class GxtappEntryPoint implements EntryPoint, IsWidget {
 					@Override
 					public void onSuccess(Item[] result) {
 						log("succes!");
-						removeAll(leftStore);
-						removeAll(rightStore);
-						rightStore.addSubTree(0, createModels(Arrays.asList(result)));
+						removeAll(listStore);
+						removeAll(treeStore);
+						treeStore.addSubTree(0, createModels(Arrays.asList(result)));
 						progressLoadDBMessageBox.hide();
 					}
 				});
@@ -229,7 +229,7 @@ public class GxtappEntryPoint implements EntryPoint, IsWidget {
 				progressSaveDBMessageBox.auto();
 				progressSaveDBMessageBox.show();
 				
-				treeSaveService.saveTree(rightStore.getRootItems().toArray(new Item[0]), new AsyncCallback<String>() {
+				treeSaveService.saveTree(treeStore.getRootItems().toArray(new Item[0]), new AsyncCallback<String>() {
 
 					@Override
 					public void onFailure(Throwable caught) {
@@ -255,10 +255,10 @@ public class GxtappEntryPoint implements EntryPoint, IsWidget {
 	}
 	
 	private static void updateTreeStores(List<String> list) {
-		removeAll(leftStore);
-		removeAll(rightStore);
+		removeAll(listStore);
+		removeAll(treeStore);
 		for (Item item : toItemsList(list)){
-			leftStore.add(item);
+			listStore.add(item);
 		}
 	}
 	
@@ -318,11 +318,11 @@ public class GxtappEntryPoint implements EntryPoint, IsWidget {
 	    
 	    ContentPanel leftData = new ContentPanel();
 	    leftData.setHeaderVisible(false);
-	    leftData.add(createLeftTree());
+	    leftData.add(createList());
 	    
 	    ContentPanel rightData = new ContentPanel();
 	    rightData.setHeaderVisible(false);
-	    rightData.add(createRightTree());
+	    rightData.add(createTree());
 		
 		BorderLayoutContainer blc = new BorderLayoutContainer(); 
 		blc.setWestWidget(leftData, left);
@@ -399,9 +399,9 @@ public class GxtappEntryPoint implements EntryPoint, IsWidget {
 		return listAllInnerItems;
 	}
 	
-	private Tree<Item, String> createLeftTree() {
+	private Tree<Item, String> createList() {
 		
-		leftStore = new TreeStore<Item>(properties.key()){
+		listStore = new TreeStore<Item>(properties.key()){
 			@Override
 			public void addSubTree(int index, List<? extends TreeNode<? extends Item>> children) {
 				add(extractItems(children));
@@ -413,20 +413,20 @@ public class GxtappEntryPoint implements EntryPoint, IsWidget {
 				add(extractItems(children));
 			}
 		};
-		leftStore.addSubTree(0, createModels(createSimpleTree()));
+		listStore.addSubTree(0, createModels(createSimpleTree()));
 		
 		
-		leftTree = new Tree<Item, String>(leftStore, properties.name()){
+		list = new Tree<Item, String>(listStore, properties.name()){
 			@Override
 			protected boolean hasChildren(Item item) {
 				return (item.isDir()) || super.hasChildren(item);
 			}
 		};
-		leftTree.setBorders(true);
-		leftTree.setSelectionModel(new TreeSelectionModel<Item>());
-		leftTree.getStyle().setLeafIcon(Icons.INSTANCE.getLeafImage());		
+		list.setBorders(true);
+		list.setSelectionModel(new TreeSelectionModel<Item>());
+		list.getStyle().setLeafIcon(Icons.INSTANCE.getLeafImage());		
 		
-		leftTree.addDomHandler(new DoubleClickHandler() {
+		list.addDomHandler(new DoubleClickHandler() {
 			@Override
 			public void onDoubleClick(DoubleClickEvent event) {
 				moveFromLeftToRight();
@@ -445,74 +445,85 @@ public class GxtappEntryPoint implements EntryPoint, IsWidget {
 		});
 		
 //		Conf DND
-		new TreeDragSource<Item>(leftTree);
-		TreeDropTarget<Item> dropTarget = new TreeDropTarget<Item>(leftTree);
+		new TreeDragSource<Item>(list);
+		TreeDropTarget<Item> dropTarget = new TreeDropTarget<Item>(list);
 		dropTarget.setFeedback(Feedback.APPEND);
 		
-		return leftTree;
+		return list;
 	}
 	
 	private void moveFromLeftToRight() {
-		List<Item> selectedItemsLeft = leftTree.getSelectionModel().getSelectedItems();
-		List<Item> selectedItemsRight = rightTree.getSelectionModel().getSelectedItems();
+		List<Item> selectedItemsLeft = list.getSelectionModel().getSelectedItems();
+		List<Item> selectedItemsRight = tree.getSelectionModel().getSelectedItems();
 		if (selectedItemsRight.size() > 1) {
 			return;
 		} else if (selectedItemsRight.size() != 1) {
 			for (Item item : selectedItemsLeft) {
-				rightStore.add(new Item(item));
-				leftStore.remove(item);
+				treeStore.add(new Item(item));
+				listStore.remove(item);
 			}
 		} else {
 			Item itemRight = selectedItemsRight.get(0);
 			if (itemRight.isDir()) {
 				for (Item item : selectedItemsLeft) {
-					rightStore.add(itemRight, new Item(item));
-					leftStore.remove(item);
+					treeStore.add(itemRight, new Item(item));
+					listStore.remove(item);
 				}
 			}
 		}
 	}
 
 
-	private Tree<Item, String> createRightTree() {
+	private Tree<Item, String> createTree() {
 		
-		rightStore = new TreeStore<Item>(properties.key()){
+		treeStore = new TreeStore<Item>(properties.key()){
 			@Override
 			public void add(Item parent, Item child) {
-				if (child.isDir())
+				if (child.isDir()){
 					insert(parent, 0, child);
+					parent.addItem(child);
+				}
 				else
 					super.add(parent, child);
 			}
 			@Override
 			public void add(Item root) {
-				if (root.isDir())
+				if (root.isDir()){
 					insert(0, root);
+				}
 				else
 					super.add(root);
 			}
+			@Override
+			public void addSubTree(Item parent, int index, List<? extends TreeNode<? extends Item>> children) {
+				super.addSubTree(parent, index, children);
+				for (TreeNode<? extends Item> node : children) {
+					parent.addItem(node.getData());
+				}
+			}
 		};
 		
+		// for tests
 //		rightStore.addSubTree(0, createModels(createSimpleTree()));
 		
-		rightTree = new Tree<Item, String>(rightStore, properties.name()){
+		tree = new Tree<Item, String>(treeStore, properties.name()){
 			@Override
 			protected boolean hasChildren(Item item) {
 				return (item.isDir()) || super.hasChildren(item);
 			}
 		};
-		rightTree.setBorders(true);
-		rightTree.setSelectionModel(new TreeSelectionModel<Item>());
-		rightTree.getStyle().setLeafIcon(Icons.INSTANCE.getLeafImage());
+		tree.setBorders(true);
+		tree.setSelectionModel(new TreeSelectionModel<Item>());
+		tree.getStyle().setLeafIcon(Icons.INSTANCE.getLeafImage());
 		
-		new TreeDragSource<Item>(rightTree){
+		new TreeDragSource<Item>(tree){
 			@Override
 			protected void onDragDrop(DndDropEvent event) {
 				ArrayList<TreeStore.TreeNode<Item>> nodeList = (ArrayList<TreeStore.TreeNode<Item>>)event.getData();
 				for (TreeNode<Item> node : nodeList) {
 					Item it = node.getData();
 					try {
-						rightStore.getParent(it).getItems().remove(it);
+						treeStore.getParent(it).getItems().remove(it);
 					} catch (Exception e) {
 						log(e);
 					}
@@ -521,22 +532,22 @@ public class GxtappEntryPoint implements EntryPoint, IsWidget {
 			}
 		};
 		
-		TreeDropTarget<Item> treeDropTarget = new TreeDropTarget<Item>(rightTree);
+		TreeDropTarget<Item> treeDropTarget = new TreeDropTarget<Item>(tree);
 		treeDropTarget.setFeedback(Feedback.APPEND);
 		treeDropTarget.setAllowSelfAsSource(true);
 		
 		addNewFolderBtn.addSelectHandler(new SelectHandler() {
 			@Override
 			public void onSelect(SelectEvent event) {
-				List<Item> selectedItems = rightTree.getSelectionModel().getSelectedItems();
+				List<Item> selectedItems = tree.getSelectionModel().getSelectedItems();
 				if (selectedItems.size() > 1) return;
 				if (selectedItems.size() == 0){
-					final PromptMessageBox messageBox = promptNewDirName(rightStore, null);
+					final PromptMessageBox messageBox = promptNewDirName(treeStore, null);
 					messageBox.show();
 				}else{
 					final Item selectedItem = selectedItems.get(0);  
 					if (null != selectedItem){
-						final PromptMessageBox messageBox = promptNewDirName(rightStore, selectedItem);
+						final PromptMessageBox messageBox = promptNewDirName(treeStore, selectedItem);
 						messageBox.show();
 					}
 				}
@@ -565,13 +576,13 @@ public class GxtappEntryPoint implements EntryPoint, IsWidget {
 		toLeftBtn.addSelectHandler(new SelectHandler() {
 			@Override
 			public void onSelect(SelectEvent event) {
-				List<Item> selectedItemsRight = rightTree.getSelectionModel().getSelectedItems();
+				List<Item> selectedItemsRight = tree.getSelectionModel().getSelectedItems();
 				for (Item item : selectedItemsRight) {
-					rightStore.getParent(item).getItems().remove(item);
-					List<Item> allChildren = rightStore.getAllChildren(item);
+					treeStore.getParent(item).getItems().remove(item);
+					List<Item> allChildren = treeStore.getAllChildren(item);
 					moveFromRightToLeft(allChildren);
 					if (item.isDir())
-						rightStore.remove(item);
+						treeStore.remove(item);
 					else
 						moveFromRightToLeft(Arrays.asList(item));
 				}
@@ -582,21 +593,21 @@ public class GxtappEntryPoint implements EntryPoint, IsWidget {
 		toLeftAllBtn.addSelectHandler(new SelectHandler() {
 			@Override
 			public void onSelect(SelectEvent event) {
-				moveFromRightToLeft(rightStore.getAll());
+				moveFromRightToLeft(treeStore.getAll());
 			}
 
 		});
 		
-		return rightTree;
+		return tree;
 	}
 	
 	private void moveFromRightToLeft(List<Item> items) {
 		for (Item item : items) {
 			if (!(item.isDir())) {
 				Item root = new Item(item);
-				leftStore.add(root);
+				listStore.add(root);
 			}
-			rightStore.remove(item);
+			treeStore.remove(item);
 		}
 	}
 	
