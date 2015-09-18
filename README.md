@@ -11,6 +11,7 @@ The right tree can be saved in a database format MongoDB preserving the folder s
 ### Need to do ###
 - whole refactoring (GxtappEntryPoint.class is tooooo fat and have HIGH Coupling)
 - resolve the issue of exceptions (correct throwing & catching)
+- add tests
 - ...?
 
 ## Config ##
