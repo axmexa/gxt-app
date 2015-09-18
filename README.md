@@ -9,6 +9,7 @@ The interface is clear and convenient displaced. It can be used as Drag-n-Drop, 
 The right tree can be saved in a database format MongoDB preserving the folder structure. You can load a previously saved tree in the right tree.
 
 ### Need to do ###
+- add comments
 - whole refactoring (GxtappEntryPoint.class is tooooo fat and have HIGH Coupling)
 - resolve the issue of exceptions (correct throwing & catching)
 - add tests
